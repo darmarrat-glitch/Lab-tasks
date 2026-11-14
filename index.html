@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Задачи</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Unbounded:wght@500;700&display=swap">
+<style>
+/* Страница студента: замок с паролем, затем лист задач только для чтения */
+:root{
+  --bg:#f3f6f5; --sheet:#ffffff; --ink:#18241f; --muted:#5d6d66; --rule:#d6e0dc;
+  --accent:#0f6b5c; --late:#b3261e; --late-soft:#fbe9e7; --soon:#8a5a00; --soon-soft:#fbf1dc; --done:#7d8b85;
+  --pc:#0f6b5c;
+  --f-display:"Unbounded","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0f1513; --sheet:#161e1b; --ink:#e3ece8; --muted:#94a59e; --rule:#2a3631;
+  --accent:#5cc3ad; --late:#ff8a80; --late-soft:#3a1a18; --soon:#f0c062; --soon-soft:#33290f; --done:#6c7a74; --pc:#5cc3ad;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding:24px 16px 64px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(21px,5vw,28px);margin:0}
+h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0}
+.meta{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);text-align:right}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.lock{max-width:380px;margin:12vh auto 0;width:100%}
+.lock form{display:flex;flex-direction:column;gap:10px}
+input[type=password],input[type=text]{font:inherit;padding:9px 10px;border:1px solid var(--rule);border-radius:4px;background:var(--sheet);color:var(--ink);font-family:var(--f-mono)}
+label.chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+button{font:inherit;font-weight:500;padding:8px 14px;border-radius:4px;border:1px solid var(--accent);background:var(--accent);color:var(--sheet);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent);padding:4px 10px;font-size:13px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.err{color:var(--late);font-size:14px;margin:0}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.goal{padding:10px 12px;background:var(--bg);border-radius:4px;white-space:pre-wrap}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+ul.tasks{list-style:none;margin:0;padding:0}
+.task{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--rule)}
+.task:first-child{border-top:none}
+.d{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.ttl{font-weight:500}
+.det{font-size:13.5px;color:var(--muted)}
+.kind{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--muted);margin-right:6px}
+.flag{display:inline-block;font-size:11px;font-weight:600;padding:0 6px;border-radius:3px;margin-left:6px}
+.flag.late{color:var(--late);background:var(--late-soft)}
+.flag.soon{color:var(--soon);background:var(--soon-soft)}
+.with{display:inline-block;font-size:11px;font-weight:600;padding:0 7px;border-radius:999px;margin-left:6px;border:1px solid var(--rule);color:var(--muted)}
+.task.done .ttl,.task.done .det{color:var(--done);text-decoration:line-through}
+details summary{cursor:pointer;color:var(--muted);font-size:13.5px}
+.lcard{border:1px solid var(--rule);border-left:4px solid var(--pc);border-radius:5px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.lt{font-weight:600}
+.tbar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--pc)}
+.tbar.over i{background:var(--late)}
+.tnote{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tnote.over{color:var(--late)}
+.desc{white-space:pre-wrap;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+ul.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:14px}
+ul.steps li::before{content:"○ ";color:var(--muted)}
+ul.steps li.done{color:var(--done);text-decoration:line-through}
+ul.steps li.done::before{content:"● ";color:var(--pc)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="lock" class="panel lock">
+    <h3>Страница с задачами</h3>
+    <form id="lockform">
+      <input type="password" id="pw" placeholder="Пароль" aria-label="Пароль" autocomplete="current-password" required>
+      <label class="chk"><input type="checkbox" id="remember" checked> Запомнить на этом устройстве</label>
+      <button type="submit" id="go">Открыть</button>
+      <p class="err" id="err" hidden></p>
+    </form>
+    <p class="hint">Пароль присылает руководитель вместе со ссылкой.</p>
+  </div>
+  <div id="page" hidden></div>
+</div>
+<script>
+const WD = ["вс","пн","вт","ср","чт","пт","сб"];
+const KINDS = {deliver:"сдача", check:"проверка", meet:"встреча"};
+const STATUSES = {plan:"не начата", work:"в работе", pause:"на паузе", done:"готово"};
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const fmt = s => { const d = parse(s); return WD[d.getDay()]+" "+pad(d.getDate())+"."+pad(d.getMonth()+1); };
+const dm = s => { const d = parse(s); return pad(d.getDate())+"."+pad(d.getMonth()+1); };
+const days = (a,b) => Math.round((parse(b)-parse(a))/86400000);
+const now = new Date(), TODAY = iso(now), in7 = iso(new Date(now.getFullYear(), now.getMonth(), now.getDate()+7));
+const slug = (location.hash.slice(1) || new URLSearchParams(location.search).get("s") || "").replace(/[^a-z0-9-]/gi,"");
+const $ = s => document.querySelector(s);
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(_){} }, del(k){ try{ localStorage.removeItem(k); }catch(_){} } };
+
+function el(tag, attrs={}, ...kids){
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs||{})){ if (v==null||v===false) continue;
+    if (k==="class") e.className=v; else if (k==="text") e.textContent=v; else if (k.startsWith("on")) e.addEventListener(k.slice(2),v); else e.setAttribute(k,v); }
+  for (const k of kids.flat()) if (k!=null && k!==false) e.append(k);
+  return e;
+}
+const unb64 = s => Uint8Array.from(atob(s), c=>c.charCodeAt(0));
+async function decrypt(blob, pw){
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:unb64(blob.salt), iterations:blob.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(blob.iv)}, key, unb64(blob.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function fetchBlob(){
+  const r = await fetch("data/"+slug+".json?t="+Date.now(), {cache:"no-store"});
+  if (r.status===404) throw {user:"Страница пока не опубликована. Попробуйте через пару минут."};
+  if (!r.ok) throw {user:"Не удалось загрузить страницу ("+r.status+")."};
+  return r.json();
+}
+function showErr(msg){ const e=$("#err"); e.textContent=msg; e.hidden=!msg; }
+
+async function open(pw, remember){
+  const blob = await fetchBlob();
+  let data;
+  try{ data = await decrypt(blob, pw); }catch(_){ throw {user:"Неверный пароль.", badpw:true}; }
+  if (remember) store.set("pw:"+slug, pw);
+  render(data, pw);
+}
+
+function render(d, pw){
+  const names = d.names || {}, me = d.person.key;
+  const short = k => (names[k]||k).split(" ")[0];
+  const withChip = t => { const o = [t.who, ...(t.also||[])].filter(k=>k!==me); return o.length ? el("span",{class:"with",text:"вместе: "+o.map(short).join(", ")}) : null; };
+  const sortT = (a,b) => (a.date||"9").localeCompare(b.date||"9") || (a.order||0)-(b.order||0);
+  const row = t => {
+    const late = !t.done && t.date < TODAY, soon = !t.done && t.date >= TODAY && t.date <= in7;
+    return el("li",{class:"task"+(t.done?" done":"")}, el("span",{class:"d",text:fmt(t.date)}),
+      el("div",{}, el("div",{class:"ttl"}, el("span",{class:"kind",text:KINDS[t.kind]||""}), t.title, withChip(t),
+        late ? el("span",{class:"flag late",text:"просрочено"}) : soon ? el("span",{class:"flag soon",text:"на этой неделе"}) : null),
+        t.detail ? el("div",{class:"det",text:t.detail}) : null));
+  };
+  const open = d.tasks.filter(t=>!t.done).sort(sortT), done = d.tasks.filter(t=>t.done).sort(sortT).reverse();
+  const longCard = l => {
+    let time = null;
+    if (l.start && l.end){
+      const total = Math.max(days(l.start,l.end),1), pct = Math.min(100,Math.max(0,days(l.start,TODAY)/total*100));
+      const over = l.status!=="done" && TODAY > l.end;
+      const note = l.status==="done" ? "завершена" : TODAY < l.start ? "начнётся через "+days(TODAY,l.start)+" дн." : over ? "срок прошёл "+days(l.end,TODAY)+" дн. назад" : "осталось "+days(TODAY,l.end)+" дн.";
+      time = [el("div",{class:"tbar"+(over?" over":"")}, el("i",{style:"width:"+pct+"%"})), el("span",{class:"tnote"+(over?" over":""),text:note})];
+    }
+    const steps = l.steps||[];
+    return el("div",{class:"lcard"},
+      el("div",{class:"row",style:"justify-content:space-between"}, el("span",{class:"lt"}, l.title, withChip(l)), el("span",{class:"with",text:STATUSES[l.status]||""})),
+      (l.start||l.end) ? el("span",{class:"tnote",text:"с "+(l.start?dm(l.start):"?")+" по "+(l.end?dm(l.end):"?")+(steps.length?" · шаги "+steps.filter(s=>s.done).length+"/"+steps.length:"")}) : null,
+      time, l.description ? el("div",{class:"desc",text:l.description}) : null,
+      steps.length ? el("ul",{class:"steps"}, steps.map(s=>el("li",{class:s.done?"done":"",text:s.text}))) : null);
+  };
+  const g = d.generated ? new Date(d.generated) : null;
+  document.title = d.person.name.split(" ")[0]+": задачи";
+  $("#lock").hidden = true;
+  const page = $("#page"); page.hidden = false;
+  page.replaceChildren(...[
+    el("header",{}, el("div",{}, el("h1",{text:d.person.name}), d.person.role ? el("div",{class:"hint",text:d.person.role}) : null),
+      el("div",{class:"meta"}, g ? "обновлено "+pad(g.getDate())+"."+pad(g.getMonth()+1)+" в "+pad(g.getHours())+":"+pad(g.getMinutes()) : "",
+        el("div",{class:"row",style:"justify-content:flex-end;margin-top:6px"},
+          el("button",{class:"ghost",type:"button",onclick:()=>open_(pw)},"Обновить"),
+          el("button",{class:"ghost",type:"button",onclick:()=>{ store.del("pw:"+slug); location.reload(); }},"Выйти")))),
+    d.person.goal ? el("div",{class:"goal",text:d.person.goal}) : null,
+    el("div",{class:"panel"}, el("div",{class:"row",style:"justify-content:space-between"}, el("h3",{text:"Задачи со сроком"}), el("span",{class:"d",text:open.length+" открыто"})),
+      open.length ? el("ul",{class:"tasks"}, open.map(row)) : el("p",{class:"hint",text:"Открытых задач нет."}),
+      done.length ? el("details",{}, el("summary",{text:"Сделано ("+done.length+")"}), el("ul",{class:"tasks"}, done.map(row))) : null),
+    (d.long||[]).length ? el("div",{class:"panel"}, el("h3",{text:"Долгие задачи"}), d.long.map(longCard)) : null].filter(Boolean));
+}
+async function open_(pw){ try{ await open(pw, false); }catch(e){ alertBox(e.user || "Ошибка загрузки."); } }
+function alertBox(msg){ const p=$("#page"); p.prepend(el("p",{class:"err",text:msg})); }
+
+if (!slug){ $("#lockform").replaceChildren(el("p",{class:"err",text:"В ссылке нет адреса страницы. Попросите руководителя прислать ссылку ещё раз."})); }
+$("#lockform").addEventListener("submit", async e=>{
+  e.preventDefault(); showErr(""); $("#go").disabled = true; $("#go").textContent = "Открываю…";
+  try{ await open($("#pw").value, $("#remember").checked); }
+  catch(err){ showErr(err.user || "Не удалось открыть страницу."); }
+  $("#go").disabled = false; $("#go").textContent = "Открыть";
+});
+const saved = slug && store.get("pw:"+slug);
+if (saved) open(saved, false).catch(err=>{ if (err.badpw) store.del("pw:"+slug); else showErr(err.user||""); });
+</script>
+</body>
+</html>
